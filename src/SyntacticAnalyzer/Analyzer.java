@@ -6,7 +6,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 public class Analyzer {
     private static final String CONST = "CONST";
@@ -27,19 +26,18 @@ public class Analyzer {
     public static String bound_LP = "bound_LP";
     public static String bound_RP = "bound_RP";
     public static String bound_SEMI = "bound_SEMI";
-    private static String COMMA = "COMMA";
-    private static String bound_LC = "bound_LC";
-    private static String bound_RC = "bound_RC";
-    private String relOperator = "relOperator";
+    private static final String COMMA = "COMMA";
+    private static final String bound_LC = "bound_LC";
+    private static final String bound_RC = "bound_RC";
+    private final String relOperator = "relOperator";
+    private String Array = "Array";
 
-    private List<String> tokenLines = new ArrayList<>();//辅助文件读入的列表
+    private final List<String> tokenLines = new ArrayList<>();//辅助文件读入的列表
     private List<Token> tokenList = new ArrayList<>();//存放token的列表
     private List<ASTNode> leaves = new ArrayList<>();//用于存放抽象语法树的叶子节点
     private boolean flag = true;//标志是否能够生成抽象语法树
     private int tokenPointer = 0;
-    private int mState = 0;
     private String FILENAME = "C:\\Users\\96392\\Desktop\\实验报告\\编译技术2\\语法分析器\\词法分析器\\result.txt";
-    private String Array = "Array";
 
 
     public Analyzer() {
@@ -83,8 +81,7 @@ public class Analyzer {
     }
 
     public void mainLoop() {
-        //初始化状态和指针
-        mState = 0;
+        //初始化指针
         tokenPointer = 0;
         CompUnit(0);
     }
@@ -174,7 +171,7 @@ public class Analyzer {
 
             str = getTokenType();
             if (str.equals(bound_RC)) {
-
+                readWord(level, bound_RC);
             } else {
                 ConstInitVal(level);
                 str = getTokenType();
@@ -183,8 +180,8 @@ public class Analyzer {
                     ConstInitVal(level);
                     str = getTokenType();
                 }
+                readWord(level, bound_RC);
             }
-            readWord(level, bound_RC);
         } else
             ConstExp(level);
     }
@@ -612,8 +609,6 @@ public class Analyzer {
 
         leaves.add(new ASTNode(level++, "BType"));
         readWord(level, INT);
-
-
     }
 
     private void initVal(int level) {
@@ -639,36 +634,35 @@ public class Analyzer {
     }
 
     //显示抽象树
-    public void displayAST() {
-        if (!flag)
-            System.out.println("抽象语法树生成失败！");
-        else
-            System.out.println("抽象语法树生成成功！");
-        for (ASTNode node : leaves) {
-            String str = "";
-            for (int i = 0; i < node.getWeight(); i++) {
-                str += "\t";
-            }
-            str += "|-" + node.getType();
-            System.out.println(str);
-        }
+public void displayAST() {
+    if (!flag)
+        System.out.println("抽象语法树生成失败！");
+    else
+        System.out.println("抽象语法树生成成功！");
+    for (ASTNode node : leaves) {
+        String str = "";
+        for (int i = 0; i < node.getLevel(); i++)
+            str += "\t";
+        str += "|-" + node.getType();
+        System.out.println(str);
     }
+}
 
     //用于简便识别指定token
-    public boolean readWord(int level, String word) {
-        if (tokenPointer >= tokenList.size() || !flag)
-            return false;
+public boolean readWord(int level, String word) {
+    if (tokenPointer >= tokenList.size() || !flag)
+        return false;
 
-        String str = tokenList.get(tokenPointer++).getType();
+    String str = tokenList.get(tokenPointer++).getType();
 
-        if (str.equals(word)) {
-            leaves.add(new ASTNode(level, str));
-            return true;
-        } else {
-            flag = false;
-            return false;
-        }
+    if (str.equals(word)) {
+        leaves.add(new ASTNode(level, str));
+        return true;
+    } else {
+        flag = false;
+        return false;
     }
+}
 
     //AST强制复位
     public void resetLeaves(int position) {
