@@ -551,7 +551,7 @@ public class Analyzer {
         if (str.equals(Ident))
             readWord(level, Ident);
         else
-            readWord(level,Array);
+            readWord(level, Array);
     }
 
     private void UnaryOp(int level) {
@@ -585,7 +585,6 @@ public class Analyzer {
             VarDef(level);
         }
         readWord(level, bound_SEMI);
-
     }
 
     private void VarDef(int level) {
@@ -594,10 +593,13 @@ public class Analyzer {
         leaves.add(new ASTNode(level++, "VarDef"));
 
         String str = getTokenType();
-        readWord(level, Ident);
 
+        if (str.equals(Array))
+            readWord(level, Array);
+        else
+            readWord(level, Ident);
 
-
+        str = getTokenType();
         if (str.equals(ASSIGNOP)) {
             readWord(level, ASSIGNOP);
             initVal(level);
@@ -619,13 +621,20 @@ public class Analyzer {
             return;
 
         leaves.add(new ASTNode(level++, "initVal"));
-        String str = tokenList.get(tokenPointer++).getType();
+        String str = getTokenType();
 
-        if (str.equals("num")) {
-            leaves.add(new ASTNode(level, "num"));
+        if (str.equals(bound_LC)) {
+            readWord(level,bound_LC);
+            initVal(level);
+            str = getTokenType();
+            while(str.equals(COMMA)&&flag){
+                readWord(level,COMMA);
+                initVal(level);
+                str = getTokenType();
+            }
+            readWord(level,bound_RC);
         } else {
-            flag = false;
-            return;
+            Exp(level);
         }
     }
 
