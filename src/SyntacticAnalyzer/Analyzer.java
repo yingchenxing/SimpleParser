@@ -98,15 +98,15 @@ public class Analyzer {
             if (str.equals(VOID))
                 FuncDef(level);
             else if (str.equals(INT)) {
-                if ((tokenList.get(tokenPointer + 1).getType().equals(Ident) || tokenList.get(tokenPointer + 1).getType().equals(MAIN)) && tokenList.get(tokenPointer + 2).getType().equals(bound_LP))
+                if ((getTokenType(tokenPointer + 1).equals(Ident) || getTokenType(tokenPointer + 1).equals(MAIN)) && getTokenType(tokenPointer + 2).equals(bound_LP))
                     FuncDef(level);
-                else if (tokenList.get(tokenPointer + 1).getType().equals(Ident))
+                else if (getTokenType(tokenPointer + 1).equals(Ident))
                     Decl(level);
             } else if (str.equals(CONST))
                 Decl(level);
             if (tokenPointer >= tokenList.size() || !flag)
                 return;
-            str = tokenList.get(tokenPointer).getType();
+            str = getTokenType();
         }
 
     }
@@ -237,7 +237,12 @@ public class Analyzer {
 
         leaves.add(new ASTNode(level++, "FuncParam"));
         readWord(level, "INT");
-        readWord(level, Ident);
+
+        String str = getTokenType();
+        if (str.equals(Ident))
+            readWord(level, Ident);
+        else
+            readWord(level, Array);
         readWord(level, bound_RP);
 
     }
@@ -318,8 +323,7 @@ public class Analyzer {
 
         } else if (str.equals("RETURN")) {
             readWord(level, "RETURN");
-            if (tokenList.get(tokenPointer).getType().equals(bound_SEMI)) {
-            } else {
+            if (!tokenList.get(tokenPointer).getType().equals(bound_SEMI)) {
                 Exp(level);
             }
             readWord(level, "bound_SEMI");
@@ -619,50 +623,50 @@ public class Analyzer {
         String str = getTokenType();
 
         if (str.equals(bound_LC)) {
-            readWord(level,bound_LC);
+            readWord(level, bound_LC);
             initVal(level);
             str = getTokenType();
-            while(str.equals(COMMA)&&flag){
-                readWord(level,COMMA);
+            while (str.equals(COMMA) && flag) {
+                readWord(level, COMMA);
                 initVal(level);
                 str = getTokenType();
             }
-            readWord(level,bound_RC);
+            readWord(level, bound_RC);
         } else {
             Exp(level);
         }
     }
 
     //显示抽象树
-public void displayAST() {
-    if (!flag)
-        System.out.println("抽象语法树生成失败！");
-    else
-        System.out.println("抽象语法树生成成功！");
-    for (ASTNode node : leaves) {
-        String str = "";
-        for (int i = 0; i < node.getLevel(); i++)
-            str += "\t";
-        str += "|-" + node.getType();
-        System.out.println(str);
+    public void displayAST() {
+        if (!flag)
+            System.out.println("抽象语法树生成失败！");
+        else
+            System.out.println("抽象语法树生成成功！");
+        for (ASTNode node : leaves) {
+            String str = "";
+            for (int i = 0; i < node.getLevel(); i++)
+                str += "\t";
+            str += "|-" + node.getType();
+            System.out.println(str);
+        }
     }
-}
 
     //用于简便识别指定token
-public boolean readWord(int level, String word) {
-    if (tokenPointer >= tokenList.size() || !flag)
-        return false;
+    public boolean readWord(int level, String word) {
+        if (tokenPointer >= tokenList.size() || !flag)
+            return false;
 
-    String str = tokenList.get(tokenPointer++).getType();
+        String str = tokenList.get(tokenPointer++).getType();
 
-    if (str.equals(word)) {
-        leaves.add(new ASTNode(level, str));
-        return true;
-    } else {
-        flag = false;
-        return false;
+        if (str.equals(word)) {
+            leaves.add(new ASTNode(level, str));
+            return true;
+        } else {
+            flag = false;
+            return false;
+        }
     }
-}
 
     //AST强制复位
     public void resetLeaves(int position) {
